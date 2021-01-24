@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: veritasverifyapi-v${VERSION}
+  labels:
+    app: veritasverifyapi
+    version: v${VERSION}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: veritasverifyapi
+  template:
+    metadata:
+      labels:
+        app: veritasverifyapi
+    spec:
+      containers:
+      - name: statisjobapi
+        env:
+          - name: host
+            value: ${ES_HOST}
+          - name: user
+            value: ${ES_VERITASVERIFY_USER}
+          - name: password
+            value: ${ES_VERITASVERIFY_PASSWORD}
+        image: ${DOCKER_HUB_ADDRESS}:veritasverifyapi${VERSION}
+        ports:
+        - containerPort: 5000
+      imagePullSecrets:
+      - name: regcred
