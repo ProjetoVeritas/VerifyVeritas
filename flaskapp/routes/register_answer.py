@@ -14,10 +14,12 @@ class RegisterAnswer(Resource):
     def post(self):
         args = request.get_json()
 
-        text = args['text']
+        print(args)
+
+        text_id = args['id']
         answer = args['answer']
 
-        response = self.es_client.add_answer_by_exact_text(text, answer)
+        response = self.es_client.add_answer_by_id(text_id, answer)
 
         if response['status'] == 'ERROR':
             return {'code': 500, "message": "ERROR_ANSWER_REGISTERED"}, 500
