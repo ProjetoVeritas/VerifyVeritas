@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../')  # Must have a best solution
+
 import os
 
 from flask import Flask
@@ -35,3 +38,6 @@ api.add_resource(GetTexts,
 api.add_resource(GetById,
                  '/get_by_id',
                  resource_class_kwargs={'es_client': es_client})
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
