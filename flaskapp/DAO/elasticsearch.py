@@ -18,6 +18,27 @@ class ESClient:
             return {'status': 'SUCCESS'}
         return {'status': 'ERROR'}
 
+    def verify_registered_text_media(self, media_id):
+        # This function verifies if a media id hash has a correspondent text id hash
+        try:
+            response = self.es.get(index='veritasmediatext', id=media_id)['_source']
+            # If there's a linked text id to the media, return it
+            return {
+                'status': 'SUCCESS',
+                'data': response['linked_text_id']}
+
+        except exceptions.NotFoundError:
+            # There's no registered text id for the media
+            return {
+                'status': 'NOT_REGISTERED',
+                'data': None}
+
+    def register_text_to_media(self, media_hash, text_hash):
+        response = self.es.index(index='veritasmediatext', id=media_hash, body={'linked_text_id': text_hash})
+        if response['result'] == 'created':
+            return {'status': 'SUCCESS'}
+        return {'status': 'ERROR'}
+
     def get_answer_by_exact_text(self, text):
         try:
             response = self.es.get(index='veritasdata', id=hashtext(text))['_source']
