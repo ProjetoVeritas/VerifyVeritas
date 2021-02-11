@@ -18,6 +18,10 @@ This API is responsible for different routes in the Projeto Veritas:
 
 * host: Elasticsearch host
 
+* TIKA_SERVER: Tika text extractor host
+
+* TRANSCRIBE_SERVER: Transcriber service host
+
 ## How to run
 
 ```shell script

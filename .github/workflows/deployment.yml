@@ -21,9 +21,11 @@ jobs:
         ES_HOST: ${{ secrets.ES_HOST }}
         ES_VERITASVERIFY_PASSWORD: ${{ secrets.ES_VERITASVERIFY_PASSWORD }}
         ES_VERITASVERIFY_USER: ${{ secrets.ES_VERITASVERIFY_USER }}
+        TIKA_SERVER: ${{ secrets.TIKA_SERVER }}
+        TRANSCRIBE_SERVER: ${{ secrets.TRANSCRIBE_SERVER }}
       run: |
         export VERSION=$(cat VERSION)
-        envsubst '${VERSION} ${DOCKER_HUB_ADDRESS} ${ES_HOST} ${ES_VERITASVERIFY_PASSWORD} ${ES_VERITASVERIFY_USER} ' <Deployment/deployment_template.yaml > Deployment/deployment.yaml
+        envsubst '${VERSION} ${TIKA_SERVER} ${TRANSCRIBE_SERVER} ${DOCKER_HUB_ADDRESS} ${ES_HOST} ${ES_VERITASVERIFY_PASSWORD} ${ES_VERITASVERIFY_USER} ' <Deployment/deployment_template.yaml > Deployment/deployment.yaml
     - name: Login services
       env:
         DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}

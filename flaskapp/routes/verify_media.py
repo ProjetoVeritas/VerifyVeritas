@@ -1,15 +1,23 @@
 import base64
+import os
 import requests
 from flask_restful import Resource, request
 
 from flaskapp.support.hasher import hashtext
+
+tikaserver = os.getenv('TIKA_SERVER')
+if tikaserver is None:
+    tikaserver = 'http://localhost:9998'
+transcribeserver = os.getenv('TRANSCRIBE_SERVER')
+if transcribeserver is None:
+    transcribeserver = 'http://localhost:3800'
 
 
 class VerifyMedia(Resource):
     # Receives
     # {
     #   data: 'base64image'
-    #   datatype: 'image' or 'audio' or 'video'
+    #   datatype: 'image/jpeg' or 'audio/ogg; codecs=opus'
     # }
 
     def __init__(self, es_client):
@@ -35,18 +43,18 @@ class VerifyMedia(Resource):
                 mediadata = base64.b64decode(mediabase64)
 
                 # Get text from tika
-                response = requests.put('http://localhost:9998/tika', data=mediadata,
+                response = requests.put(f'{tikaserver}/tika', data=mediadata,
                                         headers={'Content-type': 'image/jpeg', 'X-Tika-OCRLanguage': 'por'})
 
                 text = response.content.decode('utf8')
 
             if args['type'] == 'audio/ogg; codecs=opus':
                 # Get audio transcription
-                response = requests.post('http://localhost:3800/transcribe', json={'data': mediabase64},
+                response = requests.post(f'{transcribeserver}/transcribe', json={'data': mediabase64},
                                          headers={'Content-Type': 'application/json'})
                 # Decode text
                 text = eval(response.content.decode('utf8'))['data']
-
+            print('text')
             # Get text hash
             text_id = hashtext(text)
 

@@ -24,6 +24,10 @@ spec:
             value: ${ES_VERITASVERIFY_USER}
           - name: password
             value: ${ES_VERITASVERIFY_PASSWORD}
+          - name: TIKA_SERVER
+            value: ${TIKA_SERVER}
+          - name: TRANSCRIBE_SERVER
+            value: ${TRANSCRIBE_SERVER}
         image: ${DOCKER_HUB_ADDRESS}:veritasverifyapi${VERSION}
         ports:
         - containerPort: 5000
