@@ -5,10 +5,11 @@ from flask_restful import Resource, request
 from flaskapp.support.hasher import hashtext
 
 
-class VerifyImage(Resource):
+class VerifyMedia(Resource):
     # Receives
     # {
     #   data: 'base64image'
+    #   datatype: 'image' or 'audio' or 'video'
     # }
 
     def __init__(self, es_client):
@@ -17,10 +18,10 @@ class VerifyImage(Resource):
     def post(self):
         args = request.get_json()
 
-        # Get image encoded as base64
-        imagebase64 = args['data']
+        # Get media encoded as base64
+        mediabase64 = args['data']
 
-        media_id = hashtext(imagebase64)
+        media_id = hashtext(mediabase64)
 
         # Verify if image data was already registered
         response_id_text_get = self.es_client.verify_registered_text_media(media_id)
@@ -29,14 +30,22 @@ class VerifyImage(Resource):
         if response_id_text_get['status'] == 'NOT_REGISTERED':
             # If not registered, proceed to get text
 
-            # Decode image
-            imgdata = base64.b64decode(imagebase64)
+            if args['type'] == 'image/jpeg':
+                # Decode media
+                mediadata = base64.b64decode(mediabase64)
 
-            # Get text from tika
-            response = requests.put('http://localhost:9998/tika', data=imgdata,
-                                    headers={'Content-type': 'image/jpeg', 'X-Tika-OCRLanguage': 'por'})
-            # Decode text
-            text = response.content.decode('utf8')
+                # Get text from tika
+                response = requests.put('http://localhost:9998/tika', data=mediadata,
+                                        headers={'Content-type': 'image/jpeg', 'X-Tika-OCRLanguage': 'por'})
+
+                text = response.content.decode('utf8')
+
+            if args['type'] == 'audio/ogg; codecs=opus':
+                # Get audio transcription
+                response = requests.post('http://localhost:3800/transcribe', json={'data': mediabase64},
+                                         headers={'Content-Type': 'application/json'})
+                # Decode text
+                text = eval(response.content.decode('utf8'))['data']
 
             # Get text hash
             text_id = hashtext(text)

@@ -12,7 +12,7 @@ from flaskapp.routes.verify_text import VerifyText
 from flaskapp.routes.register_answer import RegisterAnswer
 from flaskapp.routes.get_texts import GetTexts
 from flaskapp.routes.get_by_id import GetById
-from flaskapp.routes.verify_image import VerifyImage
+from flaskapp.routes.verify_media import VerifyMedia
 
 user = os.getenv('user')
 password = os.getenv('password')
@@ -24,12 +24,12 @@ es_client = ESClient(user, password, host)
 
 api = Api(app)
 
-api.add_resource(VerifyImage,
-                 '/receive_image',
+api.add_resource(VerifyMedia,
+                 '/receive_media',
                  resource_class_kwargs={'es_client': es_client})
 
 api.add_resource(VerifyText,
-                 '/receive_data',
+                 '/receive_text',
                  resource_class_kwargs={'es_client': es_client})
 
 api.add_resource(RegisterAnswer,
