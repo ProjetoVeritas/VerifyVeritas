@@ -28,6 +28,8 @@ spec:
             value: ${TIKA_SERVER}
           - name: TRANSCRIBE_SERVER
             value: ${TRANSCRIBE_SERVER}
+          - name: VIDEOTRANSCRIPTIONOCR_SERVER
+            value: ${VIDEOTRANSCRIPTIONOCR_SERVER}
         image: ${DOCKER_HUB_ADDRESS}:veritasverifyapi${VERSION}
         ports:
         - containerPort: 5000
