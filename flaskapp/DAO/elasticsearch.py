@@ -20,8 +20,9 @@ class ESClient:
 
     def verify_registered_text_media(self, media_id):
         # This function verifies if a media id hash has a correspondent text id hash
+        # [ENHANCEMENT] Must be optimized to only bring the linked_text_id
         try:
-            response = self.es.get(index='veritasmediatext', id=media_id)['_source']
+            response = self.es.get(index='veritasmedia', id=media_id)['_source']
             # If there's a linked text id to the media, return it
             return {
                 'status': 'SUCCESS',
@@ -33,8 +34,14 @@ class ESClient:
                 'status': 'NOT_REGISTERED',
                 'data': None}
 
-    def register_text_to_media(self, media_hash, text_hash):
-        response = self.es.index(index='veritasmediatext', id=media_hash, body={'linked_text_id': text_hash})
+    def register_text_to_media(self, data_type, media_hash, text_hash, b64audio=''):
+
+        response = self.es.index(index='veritasmedia', id=media_hash,
+                                 body={'type': data_type,
+                                       'linked_text_id': text_hash,
+                                       'audiob64ogg': b64audio
+                                       })
+
         if response['result'] == 'created':
             return {'status': 'SUCCESS'}
         return {'status': 'ERROR'}

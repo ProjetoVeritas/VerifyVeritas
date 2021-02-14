@@ -4,6 +4,7 @@ import requests
 from flask_restful import Resource, request
 
 from flaskapp.support.hasher import hashtext
+from flaskapp.support.clean_video_data import clean_video_data
 
 tikaserver = os.getenv('TIKA_SERVER')
 if tikaserver is None:
@@ -11,13 +12,16 @@ if tikaserver is None:
 transcribeserver = os.getenv('TRANSCRIBE_SERVER')
 if transcribeserver is None:
     transcribeserver = 'http://localhost:3800'
+videotranscriptionocrserver = os.getenv('VIDEOTRANSCRIPTIONOCR_SERVER')
+if videotranscriptionocrserver is None:
+    videotranscriptionocrserver = 'http://localhost:3680'
 
 
 class VerifyMedia(Resource):
     # Receives
     # {
-    #   data: 'base64image'
-    #   datatype: 'image/jpeg' or 'audio/ogg; codecs=opus'
+    #   "data": 'base64image'
+    #   "type": 'image/jpeg' or 'audio/ogg; codecs=opus' or 'video/mp4'
     # }
 
     def __init__(self, es_client):
@@ -54,12 +58,28 @@ class VerifyMedia(Resource):
                                          headers={'Content-Type': 'application/json'})
                 # Decode text
                 text = eval(response.content.decode('utf8'))['data']
-            print('text')
+
+            if args['type'] == 'video/mp4':
+                # Get multiple data from video
+                response = requests.post(f'{videotranscriptionocrserver}/extract_video', json={'data': mediabase64},
+                                         headers={'Content-Type': 'application/json'})
+
+                video_data = eval(response.content.decode('utf8'))['data']
+                text = f'###Video_OCR### \n ' \
+                       f'{clean_video_data(video_data["video_ocr"])} \n ' \
+                       f'###Audio_Transcription### \n ' \
+                       f'{clean_video_data(video_data["audio_transcription"])}'
+
             # Get text hash
             text_id = hashtext(text)
 
-            # Make link between media id (hash) and text id (hash)
-            response_media_text_link = self.es_client.register_text_to_media(media_id, text_id)
+            # Make link between media id (hash) and text id (hash) and audio, if audio or video
+            if args['type'] == 'image/jpeg':
+                response_media_text_link = self.es_client.register_text_to_media(args['type'], media_id, text_id)
+            if args['type'] == 'audio/ogg; codecs=opus':
+                response_media_text_link = self.es_client.register_text_to_media(args['type'], media_id, text_id, mediabase64)
+            if args['type'] == 'video/mp4':
+                response_media_text_link = self.es_client.register_text_to_media(args['type'], media_id, text_id, video_data['audiob64'])
 
             # If linking was successful
             if response_media_text_link['status'] == 'SUCCESS':

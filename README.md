@@ -22,6 +22,8 @@ This API is responsible for different routes in the Projeto Veritas:
 
 * TRANSCRIBE_SERVER: Transcriber service host
 
+* VIDEOTRANSCRIPTIONOCR_SERVER: Video transcription/OCR server
+
 ## How to run
 
 ```shell script
